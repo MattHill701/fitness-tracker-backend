@@ -1,15 +1,36 @@
 // require in the database adapter functions as you write them (createUser, createActivity...)
-// const { } = require('./');
-const client = require("./client");
+const {
+  getUserById,
+  getAllActivities,
+  getActivityById,
+  createActivity,
+  updateActivity,
+  getRoutineById,
+  getAllRoutines,
+  getAllPublicRoutines,
+  getAllRoutinesByUser,
+  getPublicRoutinesByUser,
+  getPublicRoutinesByActivity,
+  createRoutine,
+  updateRoutine,
+  destroyRoutine,
+  createUser,
+  getUser,
+  getRoutineActivitiesByRoutine,
+  addActivityToRoutine,
+  updateRoutineActivity,
+  destroyRoutineActivity,
+} = require("./");
+const { client } = require("./client");
 
 async function dropTables() {
   try {
     console.log("Dropping All Tables...");
     // drop all tables, in the correct order
-    client.query(`
-        DROP TABLE IF EXISTS RoutineActivities;
-        DROP TABLE IF EXISTS activities;
+    await client.query(`
+        DROP TABLE IF EXISTS routine_activities;
         DROP TABLE IF EXISTS routines;
+        DROP TABLE IF EXISTS activities;
         DROP TABLE IF EXISTS users;
         `);
     console.log("Finished dropping Tables...");
@@ -23,27 +44,29 @@ async function createTables() {
     console.log("Starting to build tables...");
     // create all tables, in the correct order
 
-    client.query(
+    await client.query(
       `
-    CREATE TABLE Users(
+    CREATE TABLE users(
       id SERIAL PRIMARY KEY,
       username VARCHAR(255) UNIQUE NOT NULL,
       password VARCHAR(255) NOT NULL
     );
     
-    CREATE TABLE Activities(
+    CREATE TABLE activities(
       id SERIAL PRIMARY KEY,
       name VARCHAR(255)	UNIQUE NOT NULL,
       description	TEXT NOT NULL
     )
-    CREATE TABLE Routines(
+
+    CREATE TABLE routines(
       id	SERIAL	PRIMARY KEY,
-      "creatorId"	INTEGER	FOREIGN KEY,
+      "creatorId"	INTEGER	REFERENCES users(id),
       "isPublic"	BOOLEAN	DEFAULT false,
       name	VARCHAR(255)	UNIQUE NOT NULL,
       goal	TEXT	NOT NULL
     )
-    CREATE TABLE RoutineActivities(
+
+    CREATE TABLE routine_activities(
       id	SERIAL	PRIMARY KEY,
       "routineId"	INTEGER	FOREIGN KEY,
       "activityId"	INTEGER	FOREIGN KEY,
@@ -239,10 +262,10 @@ async function rebuildDB() {
     client.connect();
     await dropTables();
     await createTables();
-    await createInitialUsers();
-    await createInitialActivities();
-    await createInitialRoutines();
-    await createInitialRoutineActivities();
+    // await createInitialUsers();
+    // await createInitialActivities();
+    // await createInitialRoutines();
+    // await createInitialRoutineActivities();
   } catch (error) {
     console.log("Error during rebuildDB");
     throw error;
