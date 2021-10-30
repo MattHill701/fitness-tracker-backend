@@ -119,7 +119,7 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
       } else {
         next({ 
           name: 'IncorrectCredentialsError', 
-          message: 'Username or password is incorrect'
+          message: 'username or password is incorrect'
         });
       }
     } catch(error) {

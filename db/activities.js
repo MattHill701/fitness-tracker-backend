@@ -1,24 +1,38 @@
-
   async function getActivityById(id) {
     try {
+      const { rows: [activities] } = await client.query(`
+      SELECT * FROM activities
+      WHERE "id" = ${id};
+      `);
   
-      //return the activity
+      return activities;
     } catch (error) {
       throw error;
     }
   }
   async function getAllActivities() {
     try {
+      const { rows: [activities] } = await client.query(`
+      SELECT * FROM activities
+      `);
   
-      //select and return an array of all activities
+      return activities;
     } catch (error) {
       throw error;
     }
   }
   async function createActivity({ name, description }) {
-    try {
+    try { const{ rows: [activities], 
+    } = await client.query(
+        `
+        INSERT INTO users(name, description)
+        VALUES($1, $2)
+        RETURNING * ;
+      `,[name, description])
+          
+        return activities
   
-      //return the new activity
+  //make sure to hash the password before storing it to the database
     } catch (error) {
       throw error;
     }
@@ -26,6 +40,14 @@
   async function updateActivity({ id, name, description }) {
     try {
   
+      const { rows: [activities] } = await client.query(`
+        UPDATE activities
+        SET name = ${ name } , description =  ${ description } 
+        WHERE id=${ id }
+        RETURNING * ;
+      `);
+  
+      return activities;
      // don't try to update the id...
      // do update the name and description
      // return the updated activity 
