@@ -1,21 +1,23 @@
+  const {client } = require("./client")
+  
   async function getActivityById(id) {
     try {
       const { rows: [activities] } = await client.query(`
       SELECT * FROM activities
       WHERE "id" = ${id};
       `);
-  
+      
       return activities;
     } catch (error) {
       throw error;
     }
   }
   async function getAllActivities() {
+    
     try {
-      const { rows: [activities] } = await client.query(`
+      const { rows: activities } = await client.query(`
       SELECT * FROM activities
       `);
-  
       return activities;
     } catch (error) {
       throw error;
@@ -25,7 +27,7 @@
     try { const{ rows: [activities], 
     } = await client.query(
         `
-        INSERT INTO users(name, description)
+        INSERT INTO activities(name, description)
         VALUES($1, $2)
         RETURNING * ;
       `,[name, description])
@@ -39,14 +41,14 @@
   }
   async function updateActivity({ id, name, description }) {
     try {
-  
       const { rows: [activities] } = await client.query(`
         UPDATE activities
-        SET name = ${ name } , description =  ${ description } 
-        WHERE id=${ id }
+        SET "name" = $2 ,
+        "description" = $3 
+        WHERE "id"=$1
         RETURNING * ;
-      `);
-  
+      `, [id, name, description]);
+      console.log(activities,"after update")
       return activities;
      // don't try to update the id...
      // do update the name and description
