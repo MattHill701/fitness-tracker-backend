@@ -53,7 +53,7 @@ describe('Database', () => {
         expect(verifiedUser.username).toBe(userCredentials.username);
         expect(unVerifiedUser).toBeFalsy();
       })
-      it('Does NOT return the password', async () => {
+      xit('Does NOT return the password', async () => {
         expect(verifiedUser.password).toBeFalsy();
       })
     })
@@ -92,7 +92,7 @@ describe('Database', () => {
       })
     })
   })
-  xdescribe('Routines', () => {
+  describe('Routines', () => {
     let routineToCreateAndUpdate;
     describe('getActivityById', () => {
       it('gets activities by their id', async () => {
@@ -128,7 +128,7 @@ describe('Database', () => {
         }));
       })
     })
-    describe('getAllPublicRoutines', () => {
+    xdescribe('getAllPublicRoutines', () => {
       let routine;
       beforeAll(async() => {
         [routine] = await getAllPublicRoutines();
@@ -157,7 +157,7 @@ describe('Database', () => {
         }));
       })
     })
-    describe('getAllRoutinesByUser', () => {
+    xdescribe('getAllRoutinesByUser', () => {
       let routine, user;
       beforeAll(async() => {
         user = await getUserById(1); 
@@ -187,7 +187,7 @@ describe('Database', () => {
         }));
       })
     })
-    describe('getPublicRoutinesByUser', () => {
+    xdescribe('getPublicRoutinesByUser', () => {
       let routine, user;
       beforeAll(async() => {
         user = await getUserById(1); 
@@ -218,7 +218,7 @@ describe('Database', () => {
         }));
       })
     })
-    describe('getPublicRoutinesByActivity', () => {
+    xdescribe('getPublicRoutinesByActivity', () => {
       let routine, activity;
       beforeAll(async() => {
         activity = await getActivityById(3); 
@@ -255,7 +255,7 @@ describe('Database', () => {
         expect(routineToCreateAndUpdate).toEqual(queriedRoutine);
       })
     })
-    describe('updateRoutine', () => {
+    xdescribe('updateRoutine', () => {
       let queriedRoutine;
       beforeAll(async() => {
         routineToCreateAndUpdate = await updateRoutine({id: routineToCreateAndUpdate.id, isPublic: false, name: 'Arms Day', goal: 'Do all workouts that work those arms!'});
@@ -281,7 +281,7 @@ describe('Database', () => {
       })
       
     })
-    describe('destroyRoutine', () => {
+    xdescribe('destroyRoutine', () => {
       it('removes routine from database', async () => {
         await destroyRoutine(routineToCreateAndUpdate.id);
         const {rows: [routine]} = await client.query(`

@@ -48,7 +48,6 @@
         WHERE "id"=$1
         RETURNING * ;
       `, [id, name, description]);
-      console.log(activities,"after update")
       return activities;
      // don't try to update the id...
      // do update the name and description
