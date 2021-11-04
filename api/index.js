@@ -281,3 +281,5 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
   apiRouter.delete("/api/routine_activities/:routineActivityId", async (req, res, next) => {
     res.send("delete routineActivityId")
   });
+
+  module.exports = apiRouter;
