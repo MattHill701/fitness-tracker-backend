@@ -1,25 +1,10 @@
 // require in the database adapter functions as you write them (createUser, createActivity...)
 const {
-  getUserById,
-  getAllActivities,
-  getActivityById,
-  createActivity,
-  updateActivity,
-  getRoutineById,
-  getAllRoutines,
-  getAllPublicRoutines,
-  getAllRoutinesByUser,
-  getPublicRoutinesByUser,
-  getPublicRoutinesByActivity,
-  createRoutine,
-  updateRoutine,
-  destroyRoutine,
-  createUser,
-  getUser,
-  getRoutineActivitiesByRoutine,
-  addActivityToRoutine,
-  updateRoutineActivity,
-  destroyRoutineActivity,
+  getUserById,getAllActivities,getActivityById,createActivity,updateActivity,getRoutineById,
+  getAllRoutines,getAllPublicRoutines,getAllRoutinesByUser,getPublicRoutinesByUser,
+  getPublicRoutinesByActivity,createRoutine,updateRoutine,destroyRoutine,createUser,getUser,
+  getRoutineActivitiesByRoutine,addActivityToRoutine,updateRoutineActivity,destroyRoutineActivity,
+  attachActivitiesToRoutines
 } = require("./");
 const { client } = require("./client");
 
