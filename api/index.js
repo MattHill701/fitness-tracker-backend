@@ -7,7 +7,11 @@
 const express = require('express');
 const apiRouter = express.Router();
 const jwt = require('jsonwebtoken');
-const { getUserById } = require('../db');
+const { getUserById,getAllActivities,getActivityById,createActivity,updateActivity,getRoutineById,
+  getAllRoutines,getAllPublicRoutines,getAllRoutinesByUser,getPublicRoutinesByUser,
+  getPublicRoutinesByActivity,createRoutine,updateRoutine,destroyRoutine,createUser,getUser,
+  getRoutineActivitiesByRoutine,addActivityToRoutine,updateRoutineActivity,destroyRoutineActivity,
+  attachActivitiesToRoutines } = require('../db');
 const { JWT_SECRET } = process.env;
 
 
@@ -47,11 +51,11 @@ const { JWT_SECRET } = process.env;
     next();
   });
 
-apiRouter.get("/api/health", async (req, res, next) => {
+apiRouter.get("/health", async (req, res, next) => {
     res.send("all is well.")
   });
 
-apiRouter.post('/api/users/register', async (req, res, next) => {
+apiRouter.post('/users/register', async (req, res, next) => {
     const { username, password } = req.body;
   
     try {
@@ -92,7 +96,7 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
     } 
   });
 
-  apiRouter.post('/api/users/login', async (req, res, next) => {
+  apiRouter.post('/users/login', async (req, res, next) => {
     const { username, password } = req.body;
   
     // request must have both
@@ -128,7 +132,7 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
     }
   });
 
-  apiRouter.get("/api/users/me", async (req, res, next) => {
+  apiRouter.get("/users/me", async (req, res, next) => {
     // try{
     //   //work in progress
     //   const token = jwt.sign({ 
@@ -150,28 +154,28 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
     // } catch ({ name, message }) {
     //   next({ name, message });
     // }
+    res.send("get users me")
   });
 
-  apiRouter.get("/api/users/:username/routines", async (req, res, next) => {
-    // try{
-    // const openReports = await getOpenReports();
-    // let obj = {reports:[]}
-    // if(openReports){
-    //     obj.reports = openReports;
-    //     res.send(obj);
-    //   } else{
-    //     next({
-    //       name: 'error',
-    //       message: 'cannot get routines for this user'
-    //     })
-    //   }
+  apiRouter.get("/users/:username/routines", async (req, res, next) => {
+    const { username } = req.params;
+    try{
+    const routines = await getAllRoutinesByUser( username );
+    if(routines){
+        res.send(routines);
+      } else{
+        next({
+          name: 'error',
+          message: 'cannot get routines for this user'
+        })
+      }
   
-    // } catch ({ name, message }) {
-    //   next({ name, message });
-    // }
+    } catch ({ name, message }) {
+      next({ name, message });
+    }
   });
 
-  apiRouter.get("/api/activities", async (req, res, next) => {
+  apiRouter.get("/activities", async (req, res, next) => {
     try{
       const activities = await getAllActivities();
       if(activities){
@@ -188,7 +192,7 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
       }
   });
 
-  apiRouter.post("/api/activities", async (req, res, next) => {
+  apiRouter.post("/activities", async (req, res, next) => {
     const { name, description } = req.body;
     try{
         const activity = await createActivity(req.body);
@@ -206,15 +210,29 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
         }
   });
 
-  apiRouter.patch("/api/activities/:activityId", async (req, res, next) => {
+  apiRouter.patch("/activities/:activityId", async (req, res, next) => {
     res.send("patch activityId")
   });
 
-  apiRouter.get("/api/activities/:activityId/routines", async (req, res, next) => {
-    res.send("post activity routines")
+  apiRouter.get("/activities/:activityId/routines", async (req, res, next) => {
+    const { activityId } = req.params;
+    try{
+    const routines = await getPublicRoutinesByActivity( activityId );
+    if(routines){
+        res.send(routines);
+      } else{
+        next({
+          name: 'error',
+          message: 'cannot get routines for this activity'
+        })
+      }
+  
+    } catch ({ name, message }) {
+      next({ name, message });
+    }
   });
 
-  apiRouter.get("/api/routines", async (req, res, next) => {
+  apiRouter.get("/routines", async (req, res, next) => {
     try{
       const routines = await getAllRoutines();
       if(routines){
@@ -231,7 +249,7 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
       }
   });
 
-  apiRouter.post("/api/routines", async (req, res, next) => {
+  apiRouter.post("/routines", async (req, res, next) => {
     const { creatorId, isPublic, name, goal } = req.body;
     try{
         const routine = await createRoutine(req.body);
@@ -249,11 +267,11 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
         }
   });
 
-  apiRouter.patch("/api/routines/:routineId", async (req, res, next) => {
+  apiRouter.patch("/routines/:routineId", async (req, res, next) => {
     res.send("patch routineId")
   });
 
-  apiRouter.delete("/api/routines/:routineId", async (req, res, next) => {
+  apiRouter.delete("/routines/:routineId", async (req, res, next) => {
     try{
       const close = await destroyRoutine(req.body.id);
       if(close){
@@ -270,15 +288,15 @@ apiRouter.post('/api/users/register', async (req, res, next) => {
       }
   });
 
-  apiRouter.post("/api/routines/:routineId/activities", async (req, res, next) => {
+  apiRouter.post("/routines/:routineId/activities", async (req, res, next) => {
     res.send("patch routineId activities")
   });
 
-  apiRouter.patch("/api/routine_activities/:routineActivityId", async (req, res, next) => {
+  apiRouter.patch("/routine_activities/:routineActivityId", async (req, res, next) => {
     res.send("patch routineActivityId")
   });
 
-  apiRouter.delete("/api/routine_activities/:routineActivityId", async (req, res, next) => {
+  apiRouter.delete("/routine_activities/:routineActivityId", async (req, res, next) => {
     res.send("delete routineActivityId")
   });
 
