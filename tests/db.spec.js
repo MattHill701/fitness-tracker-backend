@@ -255,7 +255,7 @@ describe('Database', () => {
         expect(routineToCreateAndUpdate).toEqual(queriedRoutine);
       })
     })
-    xdescribe('updateRoutine', () => {
+    describe('updateRoutine', () => {
       let queriedRoutine;
       beforeAll(async() => {
         routineToCreateAndUpdate = await updateRoutine({id: routineToCreateAndUpdate.id, isPublic: false, name: 'Arms Day', goal: 'Do all workouts that work those arms!'});
@@ -281,7 +281,7 @@ describe('Database', () => {
       })
       
     })
-    xdescribe('destroyRoutine', () => {
+    describe('destroyRoutine', () => {
       it('removes routine from database', async () => {
         await destroyRoutine(routineToCreateAndUpdate.id);
         const {rows: [routine]} = await client.query(`

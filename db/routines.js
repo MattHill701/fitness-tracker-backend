@@ -1,5 +1,6 @@
 const { client } = require("./client");
 const { attachActivitiesToRoutines } = require("./activities");
+
 async function getRoutineById(id) {
   try {
     const {
@@ -82,16 +83,28 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
       `,
       [creatorId, isPublic, name, goal]
     );
-    //console.log(routines,typeof routines, "createRoutine");
-
     return routines;
-    //create and return the new routine
   } catch (error) {
     throw error;
   }
 }
 async function updateRoutine({ id, isPublic, name, goal }) {
   try {
+    const {
+      rows: [routines],
+  } = await client.query(
+      `
+  UPDATE routines
+  SET 
+  "isPublic" = $2,
+  "name" = $3,
+  "goal" = $4
+  WHERE "id"= $1
+  RETURNING *;
+`,[id, isPublic, name, goal]
+  );
+  //delete routines.id
+  return routines;
     //Find the routine with id equal to the passed in id
     //Don't update the routine id, but do update the isPublic status, name, or goal, as necessary
     //Return the updated routine
@@ -101,6 +114,15 @@ async function updateRoutine({ id, isPublic, name, goal }) {
 }
 async function destroyRoutine(id) {
   try {
+    const { 
+      rows: [routine] 
+    } = await client.query(`
+            DELETE FROM routines
+            WHERE "id" = $1
+            RETURNING *;
+        `, [id]);
+
+        return routine;
     //remove routine from database
     //Make sure to delete all the routine_activities whose routine is the one being deleted.
   } catch (error) {
