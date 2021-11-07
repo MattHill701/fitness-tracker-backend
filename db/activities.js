@@ -2,12 +2,12 @@
   
   async function getActivityById(id) {
     try {
-      const { rows: [activities] } = await client.query(`
+      const { rows: [activity] } = await client.query(`
       SELECT * FROM activities
-      WHERE "id" = ${id};
-      `);
-      
-      return activities;
+      WHERE id = $1;
+  `, [id]);
+
+  return activity;
     } catch (error) {
       throw error;
     }
@@ -16,23 +16,24 @@
     
     try {
       const { rows: activities } = await client.query(`
-      SELECT * FROM activities
-      `);
-      return activities;
+      SELECT * 
+      FROM activities;
+  `);
+
+  return activities;
     } catch (error) {
       throw error;
     }
   }
   async function createActivity({ name, description }) {
-    try { const{ rows: [activities], 
-    } = await client.query(
-        `
-        INSERT INTO activities(name, description)
-        VALUES($1, $2)
-        RETURNING * ;
-      `,[name, description])
-          
-        return activities
+    try { 
+      const { rows: [activity] } = await client.query(`
+            INSERT INTO activities(name, description)
+            VALUES ($1, $2)
+            RETURNING *;
+        `, [name, description]);
+
+        return activity;
   
   //make sure to hash the password before storing it to the database
     } catch (error) {
@@ -41,14 +42,15 @@
   }
   async function updateActivity({ id, name, description }) {
     try {
-      const { rows: [activities] } = await client.query(`
-        UPDATE activities
-        SET "name" = $2 ,
-        "description" = $3 
-        WHERE "id"=$1
-        RETURNING * ;
-      `, [id, name, description]);
-      return activities;
+      const { rows: [activity] } = await client.query(`
+      UPDATE activities
+      SET name = $2, 
+      description = $3
+      WHERE id = $1
+      RETURNING *
+  `, [id, name, description]);
+
+  return activity;
      // don't try to update the id...
      // do update the name and description
      // return the updated activity 

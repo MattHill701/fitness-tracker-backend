@@ -3,7 +3,7 @@ const {
   getUserById,getAllActivities,getActivityById,createActivity,updateActivity,getRoutineById,
   getAllRoutines,getAllPublicRoutines,getAllRoutinesByUser,getPublicRoutinesByUser,
   getPublicRoutinesByActivity,createRoutine,updateRoutine,destroyRoutine,createUser,getUser,
-  getRoutineActivitiesByRoutine,addActivityToRoutine,updateRoutineActivity,destroyRoutineActivity,
+  getRoutineActivitiesByRoutine,addActivityToRoutine,updateRoutineActivity,destroyRoutineActivity,getRoutinesWithoutActivities,
   attachActivitiesToRoutines
 } = require("./");
 const { client } = require("./client");
@@ -248,7 +248,7 @@ async function rebuildDB() {
     await createInitialUsers();
     await createInitialActivities();
     await createInitialRoutines();
-    //await createInitialRoutineActivities();
+    await createInitialRoutineActivities();
   } catch (error) {
     console.log("Error during rebuildDB");
     throw error;

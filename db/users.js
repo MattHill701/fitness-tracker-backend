@@ -23,19 +23,14 @@ async function createUser({ username, password } ) {
 
 async function getUser({ username, password }) {
     try {
-      const { rows: [users] } = await client.query(`
-      SELECT * 
-      FROM users
-      WHERE "username"=$1
-      AND "password"=$2
-      `,[username, password]);
-    //might need to use password
-    // let user = users
-    // console.log(user,"user")
-    // delete user.password
+      const user = await getUserByUsername(username);
+     if ( user.password === password){
+      delete user.password;
+      return user;
+     } else{
+       return ''
+     }
     //delete users.password
-    //console.log(users,"users")
-    return users
     } catch (error) {
       throw error;
     }
@@ -65,7 +60,12 @@ async function getUserById(id) {
 
 async function getUserByUsername(username) {
   try {
+    const { rows: [user] } = await client.query(`
+    SELECT * FROM users
+    WHERE username = $1;
+`, [username]);
 
+return user;
 //select a user using the user's username. Return the user object.
   } catch (error) {
     throw error;
