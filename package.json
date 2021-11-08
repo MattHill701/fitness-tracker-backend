@@ -10,7 +10,7 @@
     "start": "node index.js",
     "test": "jest --runInBand",
     "test:watch": "jest --watchAll --runInBand",
-    "db:build": "node ./db/seed.js",
+    "db:build": "node ./db/seed.js"
   },
   "repository": {
     "type": "git"
