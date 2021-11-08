@@ -1,5 +1,6 @@
 const express = require('express');
 const aRouter = express.Router();
+const {requireUser} = require('./utils')
 const { getUserById,getAllActivities,getActivityById,createActivity,updateActivity,getRoutineById,
   getAllRoutines,getAllPublicRoutines,getAllRoutinesByUser,getPublicRoutinesByUser,
   getPublicRoutinesByActivity,createRoutine,updateRoutine,destroyRoutine,createUser,getUser,
@@ -12,7 +13,7 @@ const { getUserById,getAllActivities,getActivityById,createActivity,updateActivi
   next(); // THIS IS DIFFERENT
 });
 
-  aRouter.patch("/:routineActivityId", async (req, res, next) => {
+  aRouter.patch("/:routineActivityId", requireUser, async (req, res, next) => {
     const { id, name, description } = req.body;
     try{
       const patch = await updateActivity( id, name, description );
@@ -30,7 +31,7 @@ const { getUserById,getAllActivities,getActivityById,createActivity,updateActivi
       }
   });
 
-  aRouter.delete("/:routineActivityId", async (req, res, next) => {
+  aRouter.delete("/:routineActivityId", requireUser, async (req, res, next) => {
     const { routineActivityId } = req.params;
     try{
       const close = await destroyRoutineActivity(routineActivityId);

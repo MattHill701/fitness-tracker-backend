@@ -1,6 +1,5 @@
 const express = require('express');
 const routinesRouter = express.Router();
-const { main } = require('./users');
 const {requireUser} = require('./utils')
 routinesRouter.use((req, res, next) => {
   console.log("A request is being made to routines");
@@ -17,7 +16,6 @@ const { getUserById,getAllActivities,getActivityById,createActivity,updateActivi
     try{
       const routines = await getAllRoutines();
       if(routines){
-        console.log(main)
           res.send(routines);
         } else{
           next({
@@ -34,7 +32,7 @@ const { getUserById,getAllActivities,getActivityById,createActivity,updateActivi
   routinesRouter.post("/", requireUser, async (req, res, next) => {
     const { creatorId, isPublic, name, goal } = req.body;
     try{
-        const routine = await createRoutine(req.body);
+        const routine = await createRoutine(creatorId, isPublic, name, goal);
         if(routine){
             res.send(routine);
           } else{
@@ -49,14 +47,30 @@ const { getUserById,getAllActivities,getActivityById,createActivity,updateActivi
         }
   });
 
-  routinesRouter.patch("/:routineId", async (req, res, next) => {
-    res.send("patch routineId")
+  routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
+    const { routineId } = req.params;
+    const routine = getRoutineById(routineId)
+    const { isPublic, name, goal } = routine
+    try{
+      const update = await updateRoutine( routineId, isPublic, name, goal );
+      if(update){
+          res.send(update);
+        } else{
+          next({
+            name: 'error',
+            message: 'updateRoutine'
+          })
+        }
+
+      } catch ({ name, message }) {
+        next({ name, message });
+      }
   });
 
-  routinesRouter.delete("/:routineId", async (req, res, next) => {
-    const { activityId } = req.params;
+  routinesRouter.delete("/:routineId", requireUser, async (req, res, next) => {
+    const { routineId } = req.params;
     try{
-      const close = await destroyRoutine(activityId);
+      const close = await destroyRoutine(routineId);
       if(close){
           res.send(close);
         } else{
@@ -71,12 +85,14 @@ const { getUserById,getAllActivities,getActivityById,createActivity,updateActivi
       }
   });
 
-  routinesRouter.post("/:routineId/activities", async (req, res, next) => {
-    const { activityId } = req.params;
+  routinesRouter.post("/:routineId/activities", requireUser, async (req, res, next) => {
+    const { routineId } = req.params;
+    const { activityId, count, duration } = req.body
     try{
-      const close = await destroyRoutine(activityId);
-      if(close){
-          res.send(close);
+      const routine = await addActivityToRoutine( routineId, activityId, count, duration )
+
+      if(routine){
+          res.send(routine);
         } else{
           next({
             name: 'error',

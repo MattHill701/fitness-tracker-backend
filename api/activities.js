@@ -24,7 +24,7 @@ activityRouter.post("/", requireUser, async (req, res, next) => {
        activityData.name = name;
         activityData.description = description;
 
-      const activity = await createActivity(activity);
+      const activity = await createActivity({ name, description });
       res.send(activity);
 
   } catch (error) {
