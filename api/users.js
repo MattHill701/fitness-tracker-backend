@@ -1,145 +1,153 @@
-// api/users.js
-const express = require('express');
+const express = require("express");
 const usersRouter = express.Router();
+const jwt = require("jsonwebtoken");
+const {
+  createUser,
+  getUser,
+  getUserByUsername,
+  getUserById,
+  getPublicRoutinesByUser,
+  getAllRoutinesByUser,
+} = require("../db");
+const { JWT_SECRET="neverTell" } = process.env
+const { requireUser } = require("./utils")
 
-const jwt = require('jsonwebtoken');
-require("dotenv").config();
-
-let mainUser = ''
-
-usersRouter.use((req, res, next) => {
-  console.log("A request is being made to /users");
-
-  next(); // THIS IS DIFFERENT
-});
-// NEW
-const { getUserById,getAllActivities,getActivityById,createActivity,updateActivity,getRoutineById,
-  getAllRoutines,getAllPublicRoutines,getAllRoutinesByUser,getPublicRoutinesByUser,
-  getPublicRoutinesByActivity,createRoutine,updateRoutine,destroyRoutine,createUser,getUser, getUserByUsername,
-  getRoutineActivitiesByRoutine,addActivityToRoutine,updateRoutineActivity,destroyRoutineActivity,
-  attachActivitiesToRoutines } = require('../db');
-
-// UPDATE
+  // usersRouter.get("/", async (req, res, next) => {
+  //   const users = await getAllUsers();
+  
+  //   res.send({
+  //     users,
+  //   });
+  // });
+// let mainUser = ''
 
 
-usersRouter.post('/register', async (req, res, next) => {
-  const { username, password } = req.body;
+  usersRouter.post("/login", async (req, res, next) => {
+    
+    const { username, password } = req.body;
 
-  try {
-    const _user = await getUserByUsername(username);
-
-    if (_user) {
+    console.log("Hello")
+  
+    // request must have both
+    if (!username || !password) {
       next({
-        name: 'UserExistsError',
-        message: 'A user by that username already exists'
+        name: "MissingCredentialsError",
+        message: "Please supply both a username and password",
       });
     }
+  
+    try {
+      const user = await getUserByUsername(username);
+      console.log("this is user", user)
+      if(!user) {
+        next({name: "IncorrectCredentialsError",
+            message: "Username or password is incorrect"
+        })
+      } else {
+        // mainUser = username
+        const token = jwt.sign(
+          { id: user.id, username: user.username }, JWT_SECRET, 
+          {
+            expiresIn: "1h",
+          }
+        );
+        console.log("this is token",token)
+        res.send({user, token, message: "you are logged in!"});
+      }
+  
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  });
 
-    const user = await createUser({
-      username,
-      password,
-    });
+  usersRouter.post('/register', async (req, res, next) => {
+    const { username, password } = req.body;
+    try {
+      const queriedUser = await getUserByUsername(username);
 
-    mainUser = username
-    console.log(mainUser)
-    const token = jwt.sign({ 
-      id: user.id, 
-      username
-    }, process.env.JWT_SECRET, {
-      expiresIn: '1w'
-    });
+      if (queriedUser) {
+        res.status(401)
+        
+        next({
+          name: 'UserExistsError',
+          message: 'A user by that username already exists'
+        });
+      } else if (password.length<8){
+        res.status(401)
 
-    res.send({ 
-      message: "thank you for signing up",
-      token 
-    });
-  } catch ({ name, message }) {
-    next({ name, message })
-  } 
-});
+        next({
+          name: 'PasswordLengthError',
+          message: 'Password Too Short!'
+        })
+      } else {
+        const user = await createUser({
+          username,
+          password
+        })
+        if(!user){
+          next({
+            name: 'UserCreationError',
+            message: 'There was a problem registering you. Please try again.'
+          })
+        } else {
+          // mainUser = username
+          const token = jwt.sign({ 
+            id: user.id, 
+            username: user.username
+          }, JWT_SECRET, {
+            expiresIn: '1w'
+          });
 
-usersRouter.post('/login', async (req, res, next) => {
-  const { username, password } = req.body;
+          res.send({ 
+            user,
+            message: "you're signed up!",
+            token 
+          });
+        }
+      }
+    } catch (error) {
+      next (error)
+    } 
+  });
 
-  // request must have both
-  if (!username || !password) {
-    next({
-      name: "MissingCredentialsError",
-      message: "Please supply both a username and password"
-    });
-  }
-
-  try {
-    const user = await getUserByUsername(username);
-
-    const token = jwt.sign({ 
-      id: user.id, 
-      username
-    }, process.env.JWT_SECRET, {
-      expiresIn: '1w'
-    });
-
-    if (user && user.password == password) {
-      // create token & return to user
-      mainUser = username
-      console.log(mainUser)
-      res.send({ message: "you're logged in!", token });
-    } else {
-      next({ 
-        name: 'IncorrectCredentialsError', 
-        message: 'Username or password is incorrect'
+  usersRouter.get("/me",  async (req, res, next) => {
+    const token = req.headers.authorization;
+    try {
+  
+      //const user = await getUserByUsername(mainUser);
+    
+      if(token){
+        console.log(req.user,"req.user")
+        res.send(req.user);
+      }
+        if(!token){
+        res.status(401)
+        next({
+          name: 'Invalid token',
+          message: 'Unauthorized'
       });
+      }
+
+    } catch (error) {
+      next(error);
     }
-  } catch(error) {
-    console.log(error);
-    next(error);
-  }
-});
-
-usersRouter.post('/login', async (req, res, next) => {
-  console.log(req.body);
-  res.end();
-});
-
-usersRouter.get("/me", async (req, res, next) => {
-  try{
-  const routines = await getAllRoutinesByUser( mainUser );
-  if(routines){
-      res.send(routines);
-    } else{
-      next({
-        name: 'error',
-        message: 'cannot get routines for this user'
-      })
+  })
+  usersRouter.get("/:username/routines", async (req, res, next) => {
+    const { username } = req.params;
+    try{
+    const publicRoutines = await await getPublicRoutinesByUser({ username });
+    if(publicRoutines){
+      res.send(publicRoutines)
+      } else{
+        next({
+          name: 'error',
+          message: 'cannot get routines for this user'
+        })
+      }
+  
+    } catch ({ name, message }) {
+      next({ name, message });
     }
-
-  } catch ({ name, message }) {
-    next({ name, message });
-  }
-  // res.send("get users me")
-});
-
-usersRouter.get("/:username/routines", async (req, res, next) => {
-  const { username } = req.params;
-  try{
-  const routines = await getAllRoutinesByUser( username );
-  if(routines){
-      res.send(routines);
-    } else{
-      next({
-        name: 'error',
-        message: 'cannot get routines for this user'
-      })
-    }
-
-  } catch ({ name, message }) {
-    next({ name, message });
-  }
-});
-
-let main = mainUser
-
-module.exports = { 
-  usersRouter,
-  main,
- };
+  });
+  module.exports = usersRouter;

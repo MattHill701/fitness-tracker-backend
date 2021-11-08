@@ -51,7 +51,7 @@ describe('API', () => {
       it('Requires username and password. Requires all passwords to be at least 8 characters long.', () => {
         expect(newUser.password.length).toBeGreaterThan(7);
       });
-      it('EXTRA CREDIT: Hashes password before saving user to DB.', async () => {
+      xit('EXTRA CREDIT: Hashes password before saving user to DB.', async () => {
         const {rows: [queriedUser]} = await client.query(`
           SELECT *
           FROM users
@@ -117,7 +117,7 @@ describe('API', () => {
       });
     });
   });
-  xdescribe('Activities', () => {
+  describe('Activities', () => {
     let activityToCreateAndUpdate = { name: 'Bicep Curls', description: 'They hurt, but you will thank you later' };
     describe('GET /activities', () => {
       it('Just returns a list of all activities in the database', async () => {
@@ -159,7 +159,7 @@ describe('API', () => {
       });
     });
   });
-  xdescribe('Routines', () => {
+  describe('Routines', () => {
     let routineToCreateAndUpdate = {isPublic: true, name: 'Elliptical Day', goal: 'Work on that Elliptical!'};
     let routineToFail = {isPublic: false, name: 'Elliptical Day 2', goal: 'Work on that Elliptical... again!'};
     const newRoutineData = {isPublic: false, name: 'Elliptical Day Private', goal: 'Work on that Elliptical, yet again!'}
@@ -231,7 +231,7 @@ describe('API', () => {
       });
     });
   });
-  xdescribe('routine_activities', () => {
+  describe('routine_activities', () => {
     let newRoutineActivityData = {routineId: 3, activityId: 8, count: 25, duration: 200};
     describe('PATCH /routine_activities/:routineActivityId (**)', () => {
       it('Updates the count or duration on the routine activity', async () => {

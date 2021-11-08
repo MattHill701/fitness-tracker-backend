@@ -1,7 +1,7 @@
 const express = require('express');
 const routinesRouter = express.Router();
 const { main } = require('./users');
-
+const {requireUser} = require('./utils')
 routinesRouter.use((req, res, next) => {
   console.log("A request is being made to routines");
   next(); // THIS IS DIFFERENT
@@ -31,7 +31,7 @@ const { getUserById,getAllActivities,getActivityById,createActivity,updateActivi
       }
   });
 
-  routinesRouter.post("/", async (req, res, next) => {
+  routinesRouter.post("/", requireUser, async (req, res, next) => {
     const { creatorId, isPublic, name, goal } = req.body;
     try{
         const routine = await createRoutine(req.body);

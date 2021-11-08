@@ -1,67 +1,55 @@
-// api/index.js
-const express = require('express');
+
+// attach other routers from files in this api directory (users, activities...)
+// export the api router
+const express = require("express");
 const apiRouter = express.Router();
-const jwt = require('jsonwebtoken');
-const { getUserById } = require('../db');
-const { JWT_SECRET } = process.env;
-
-
-  // set `req.user` if possible
-  apiRouter.use(async (req, res, next) => {
-    const prefix = 'Bearer ';
-    const auth = req.header('Authorization');
-  
-    if (!auth) { // nothing to see here
-      next();
-    } else if (auth.startsWith(prefix)) {
-      const token = auth.slice(prefix.length);
-  
-      try {
-        const { id } = jwt.verify(token, JWT_SECRET);
-  
-        if (id) {
-          req.user = await getUserById(id);
-          next();
-        }
-      } catch ({ name, message }) {
-        next({ name, message });
-      }
-    } else {
-      next({
-        name: 'AuthorizationHeaderError',
-        message: `Authorization token must start with ${ prefix }`
-      });
-    }
-  });
-
-  apiRouter.use((req, res, next) => {
-    if (req.user) {
-      console.log("User is set:", req.user);
-    }
-  
-    next();
-  });
-
-const { usersRouter } = require('./users');
-apiRouter.use('/users', usersRouter);
-
-const activitiesRouter = require('./activities');
-apiRouter.use('/activities', activitiesRouter);
-
-const routinesRouter = require('./routines');
-apiRouter.use('/routines', routinesRouter);
-
-const aRouter = require('./routivities');
-apiRouter.use('/routine_activities', aRouter);
+const client = require("../db/client");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET = "neverTell" } = process.env;
+const { getUserByUsername } = require("../db/users");
 
 apiRouter.get("/health", async (req, res, next) => {
-  res.send({message: "healthy"})
+  try {
+    res.send({
+      message: "Healthy",
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
+apiRouter.use("/", async (req, res, next) => {
+  const auth = req.header("Authorization");
+
+  if (!auth) {
+    return next();
+  }
+
+  if (auth.startsWith("Bearer ")) {
+    const token = auth.slice("Bearer ".length);
+
+    try {
+      const { username } = verify(token, JWT_SECRET);
+
+      if (username) {
+        req.user = await getUserByUsername(username);
+        return next();
+      }
+    } catch ({ name, message }) {
+      next({ name, message });
+    }
+  } else {
+    next({ name: "AuthError", message: "Error in authorization format" });
+  }
+});
+
+const usersRouter = require("./users");
+apiRouter.use("/users", usersRouter);
+
+const activityRouter = require("./activities");
+apiRouter.use("/activities", activityRouter);
+
 apiRouter.use((error, req, res, next) => {
-    res.send(error);
-  });
-
+  res.send(error);
+});
 module.exports = apiRouter;
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhbGJlcnQiLCJpYXQiOjE2MzQ1MjI0NzcsImV4cCI6MTYzNTEyNzI3N30.erttBvXSFubU113ajQY1-ehDlefw7MuDBS1sAI73kf8
